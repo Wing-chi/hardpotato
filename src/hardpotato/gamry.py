@@ -15,7 +15,6 @@ class GamInfo:
             self.file_tag = "c\x02\0\0"
             self.tech = ['CV', 'CA', 'LSV', 'OCP', 'CP', 'DP', 'SWV', 'EIS']
             self.options = [
-                'Quiet time in s (qt)',
                 'Resistance in ohms (resistance)'
             ]
             self.bipot = True
@@ -47,7 +46,6 @@ class GamInfo:
 class GamBase:
     """
         **kwargs:
-            qt # s, quite time
             resistance # ohms, solution resistance
     """
     def __init__(self, **kwargs):
@@ -59,7 +57,7 @@ class GamBase:
         self.body = ''
         self.foot = '\n forcequit: yesiamsure\n'
 
-        self.qt = kwargs.get('qt', 2)
+        # self.qt = kwargs.get('qt', 2)
         self.resistance = kwargs.get('resistance', 0)
         if self.resistance and self.info.resistance_opt:  # In case IR compensation is required
             self.end_body = f'\nmir={self.resistance}\nircompon\nrun\nircompoff\n' \
@@ -108,7 +106,7 @@ class GamCV(GamBase):
         eh, el, pn = self.correct_volts(Ev1, Ev2)
 
         self.body = f'tech=cv\nei={Eini}\neh={eh}\nel={el}\npn={pn}\ncl={nSweeps+1}' \
-                    f'\nefon\nef={Efin}\nsi={dE}\nqt={self.qt}\nv={sr}\nsens={sens}'
+                    f'\nefon\nef={Efin}\nsi={dE}\nv={sr}\nsens={sens}'
 
     def validate(self, Eini, Ev1, Ev2, Efin, sr, dE, nSweeps, sens):
         self.info.limits(Eini, self.info.E_min, self.info.E_max, 'Eini', 'V')
@@ -123,7 +121,7 @@ class GamLSV(GamBase):
         super().__init__(**kwargs)
 
         self.validate(Eini, Efin, sr, dE, sens)
-        self.body = f'tech=lsv\nei={Eini}\nef={Efin}\nv={sr}\nsi={dE}\nqt={self.qt}\nsens={sens}'
+        self.body = f'tech=lsv\nei={Eini}\nef={Efin}\nv={sr}\nsi={dE}\nsens={sens}'
 
     def bipot(self, E, sens):
         if not self.info.bipot:
@@ -189,7 +187,7 @@ class GamCA(GamBase):
         self.validate(Eini, Ev1, Ev2)
         eh, el, pn = self.correct_volts(Ev1, Ev2)
         self.body = f'tech=ca\nei={Eini}\neh={eh}\nel={el}\npn={pn}\n' \
-                    f'cl={nSweeps}\npw={pw}\nsi={dE}\nqt={self.qt}\nsens={sens}'
+                    f'cl={nSweeps}\npw={pw}\nsi={dE}\nsens={sens}'
    
     def bipot(self, E, sens):
         if not self.info.bipot:
@@ -216,7 +214,7 @@ class GamOCP(GamBase):
     def __init__(self, ttot, dt, **kwargs):
         super().__init__(**kwargs)
 
-        self.body = f'tech=ocpt\nst={ttot}\neh=10\nel=-10\nsi={dt}\nqt={self.qt}'
+        self.body = f'tech=ocpt\nst={ttot}\neh=10\nel=-10\nsi={dt}'
 
     # def __init__(self, ttot, dt, folder, fileName, header, path_lib, **kwargs):
     #     self.fileName = fileName
@@ -257,7 +255,7 @@ class GamEIS(GamBase):
         super().__init__(**kwargs)
 
         print('EIS technique is still in development. Use with caution.')
-        self.body = f'tech=imp\nei={Eini}\nfl={low_freq}\nfh={high_freq}\namp={amplitude}\nsens={sens}\nqt={self.qt}'
+        self.body = f'tech=imp\nei={Eini}\nfl={low_freq}\nfh={high_freq}\namp={amplitude}\nsens={sens}'
     # def __init__(self, Eini, low_freq, high_freq, amplitude, sens, folder, 
     #              fileName, header, path_lib, **kwargs):
     #     print('EIS technique is still in development. Use with caution.')
