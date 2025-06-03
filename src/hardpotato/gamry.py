@@ -22,6 +22,7 @@ class GamInfo:
 
             self.E_min = -12
             self.E_max = 12
+            #Not sure what the scan rate ranges are yet 6/2/25
             self.sr_min = 0.000001
             self.sr_max = 10000
             self.freq_min = 0.00001
