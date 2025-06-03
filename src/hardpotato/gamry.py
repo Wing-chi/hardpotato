@@ -13,12 +13,12 @@ class GamInfo:
         if model == "gam1010e":
             self.name = "Gamry Interface 1010E (gam1010e)"
             self.file_tag = "c\x02\0\0"
-            self.tech = ['CV', 'IT', 'CA', 'LSV', 'OCP', 'NPV', 'EIS']
+            self.tech = ['CV', 'CA', 'LSV', 'OCP', 'CP', 'DP', 'SWV', 'EIS']
             self.options = [
                 'Quiet time in s (qt)',
                 'Resistance in ohms (resistance)'
             ]
-            self.bipot = False
+            self.bipot = True
             self.resistance_opt = True
 
             self.E_min = -12
@@ -125,36 +125,61 @@ class GamLSV(GamBase):
         self.validate(Eini, Efin, sr, dE, sens)
         self.body = f'tech=lsv\nei={Eini}\nef={Efin}\nv={sr}\nsi={dE}\nqt={self.qt}\nsens={sens}'
 
+    def bipot(self, E, sens):
+        if not self.info.bipot:
+            raise Exception(self.info.name, " does not have bipot abilities.")
+
+        # Validate bipot:
+        self.info.limits(E, self.info.E_min, self.info.E_max, 'E2', 'V')
+
+        self.body += '\ne2=' + str(E) + '\nsens2=' + str(sens) + '\ni2on' + \
+                     '\nrun\nsave:' + self.fileName + '\ntsave:' + self.fileName
+        
     def validate(self, Eini, Efin, sr, dE, sens):
         self.info.limits(Eini, self.info.E_min, self.info.E_max, 'Eini', 'V')
         self.info.limits(Efin, self.info.E_min, self.info.E_max, 'Efin', 'V')
         self.info.limits(sr, self.info.sr_min, self.info.sr_max, 'sr', 'V/s')
 
+# class GamCP(GamBase):
+#     def __init__(self, Eini, Ev1, Ev2, dE, nSweeps, pw, sens, **kwargs):
+#         super().__init__(**kwargs)
 
-class GamNPV(GamBase):
-    def __init__(self, Eini, Efin, dE, tsample, twidth, tperiod, sens, **kwargs):
-        super().__init__(**kwargs)
-        print('NPV technique still in development. Use with caution.')
+#         self.validate(Eini, Ev1, Ev2)
+#         eh, el, pn = self.correct_volts(Ev1, Ev2)
+#         self.body = f'tech=ca\nei={Eini}\neh={eh}\nel={el}\npn={pn}\n' \
+#                     f'cl={nSweeps}\npw={pw}\nsi={dE}\nqt={self.qt}\nsens={sens}'
 
-        self.validate(Eini, Efin, dE, tsample, twidth, tperiod, sens)
-        self.body = f'tech=NPV\nei={Eini}\nef={Efin}\nincre={dE}\npw={tsample}\nsw={twidth}\nprod={tperiod}' \
-                    f'\nqt={self.qt}\nsens={sens}'
+#     def validate(self, Eini, Ev1, Ev2):
+#         self.info.limits(Eini, self.info.E_min, self.info.E_max, 'Eini', 'V')
+#         self.info.limits(Ev1, self.info.E_min, self.info.E_max, 'Ev1', 'V')
+#         self.info.limits(Ev2, self.info.E_min, self.info.E_max, 'Ev2', 'V')
+# class GamDP(GamBase):
+#     def __init__(self, Eini, Ev1, Ev2, dE, nSweeps, pw, sens, **kwargs):
+#         super().__init__(**kwargs)
 
-    def validate(self, Eini, Efin, dE, tsample, twidth, tperiod, sens):
-        self.info.limits(Eini, self.info.E_min, self.info.E_max, 'Eini', 'V')
-        self.info.limits(Efin, self.info.E_min, self.info.E_max, 'Efin', 'V')
+#         self.validate(Eini, Ev1, Ev2)
+#         eh, el, pn = self.correct_volts(Ev1, Ev2)
+#         self.body = f'tech=ca\nei={Eini}\neh={eh}\nel={el}\npn={pn}\n' \
+#                     f'cl={nSweeps}\npw={pw}\nsi={dE}\nqt={self.qt}\nsens={sens}'
 
+#     def validate(self, Eini, Ev1, Ev2):
+#         self.info.limits(Eini, self.info.E_min, self.info.E_max, 'Eini', 'V')
+#         self.info.limits(Ev1, self.info.E_min, self.info.E_max, 'Ev1', 'V')
+#         self.info.limits(Ev2, self.info.E_min, self.info.E_max, 'Ev2', 'V')
+# class GamSWV(GamBase):
+#     def __init__(self, Eini, Ev1, Ev2, dE, nSweeps, pw, sens, **kwargs):
+#         super().__init__(**kwargs)
 
-class GamIT(GamBase):
-    def __init__(self, Estep, dt, ttot, sens, **kwargs):
-        super().__init__(**kwargs)
+#         self.validate(Eini, Ev1, Ev2)
+#         eh, el, pn = self.correct_volts(Ev1, Ev2)
+#         self.body = f'tech=ca\nei={Eini}\neh={eh}\nel={el}\npn={pn}\n' \
+#                     f'cl={nSweeps}\npw={pw}\nsi={dE}\nqt={self.qt}\nsens={sens}'
 
-        self.validate(Estep, dt, ttot, sens)
-        self.body = f'tech=i-t\nei={Estep}\nst={ttot}\nsi={dt}\nqt={self.qt}\nsens={sens}'
-
-    def validate(self, Estep, dt, ttot, sens):
-        self.info.limits(Estep, self.info.E_min, self.info.E_max, 'Estep', 'V')
-
+#     def validate(self, Eini, Ev1, Ev2):
+#         self.info.limits(Eini, self.info.E_min, self.info.E_max, 'Eini', 'V')
+#         self.info.limits(Ev1, self.info.E_min, self.info.E_max, 'Ev1', 'V')
+#         self.info.limits(Ev2, self.info.E_min, self.info.E_max, 'Ev2', 'V')
+    
 
 class GamCA(GamBase):
 
@@ -165,7 +190,17 @@ class GamCA(GamBase):
         eh, el, pn = self.correct_volts(Ev1, Ev2)
         self.body = f'tech=ca\nei={Eini}\neh={eh}\nel={el}\npn={pn}\n' \
                     f'cl={nSweeps}\npw={pw}\nsi={dE}\nqt={self.qt}\nsens={sens}'
+   
+    def bipot(self, E, sens):
+        if not self.info.bipot:
+            raise Exception(self.info.name, " does not have bipot abilities.")
 
+        # Validate bipot:
+        self.info.limits(E, self.info.E_min, self.info.E_max, 'E2', 'V')
+
+        self.body += '\ne2=' + str(E) + '\nsens2=' + str(sens) + '\ni2on' + \
+                     '\nrun\nsave:' + self.fileName + '\ntsave:' + self.fileName
+        
     def validate(self, Eini, Ev1, Ev2):
         self.info.limits(Eini, self.info.E_min, self.info.E_max, 'Eini', 'V')
         self.info.limits(Ev1, self.info.E_min, self.info.E_max, 'Ev1', 'V')
