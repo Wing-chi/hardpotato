@@ -27,7 +27,7 @@ class GamInfo:
             self.sr_max = 10000
     
         else:
-            raise Exception(f"CHI model {model} not available in hardpotato.")
+            raise Exception(f"Gamry model {model} not available in hardpotato.")
 
     @staticmethod
     def limits(val, low, high, label, units):
@@ -98,7 +98,7 @@ class GamBase:
                      '\nrun\nsave:' + self.fileName + '\ntsave:' + self.fileName
 
 
-class ChiCV(ChiBase):
+class GamCV(GamBase):
     def __init__(self, Eini, Ev1, Ev2, Efin, sr, dE, nSweeps, sens, **kwargs):
         super().__init__(**kwargs)
 
@@ -116,7 +116,7 @@ class ChiCV(ChiBase):
         self.info.limits(sr, self.info.sr_min, self.info.sr_max, 'sr', 'V/s')
 
 
-class ChiLSV(ChiBase):
+class GamLSV(GamBase):
     def __init__(self, Eini, Efin, sr, dE, sens, **kwargs):
         super().__init__(**kwargs)
 
@@ -129,7 +129,7 @@ class ChiLSV(ChiBase):
         self.info.limits(sr, self.info.sr_min, self.info.sr_max, 'sr', 'V/s')
 
 
-class ChiNPV(ChiBase):
+class GamNPV(GamBase):
     def __init__(self, Eini, Efin, dE, tsample, twidth, tperiod, sens, **kwargs):
         super().__init__(**kwargs)
         print('NPV technique still in development. Use with caution.')
@@ -143,7 +143,7 @@ class ChiNPV(ChiBase):
         self.info.limits(Efin, self.info.E_min, self.info.E_max, 'Efin', 'V')
 
 
-class ChiIT(ChiBase):
+class GamIT(GamBase):
     def __init__(self, Estep, dt, ttot, sens, **kwargs):
         super().__init__(**kwargs)
 
@@ -154,7 +154,7 @@ class ChiIT(ChiBase):
         self.info.limits(Estep, self.info.E_min, self.info.E_max, 'Estep', 'V')
 
 
-class ChiCA(ChiBase):
+class GamCA(GamBase):
 
     def __init__(self, Eini, Ev1, Ev2, dE, nSweeps, pw, sens, **kwargs):
         super().__init__(**kwargs)
@@ -170,7 +170,7 @@ class ChiCA(ChiBase):
         self.info.limits(Ev2, self.info.E_min, self.info.E_max, 'Ev2', 'V')
 
 
-class ChiOCP(ChiBase):
+class GamOCP(GamBase):
     """
         Pending:
         * Validate parameters
@@ -182,7 +182,7 @@ class ChiOCP(ChiBase):
         self.body = f'tech=ocpt\nst={ttot}\neh=10\nel=-10\nsi={dt}\nqt={self.qt}'
 
 
-class ChiEIS(ChiBase):
+class GamEIS(GamBase):
     """
         Pending:
         * Validate parameters
