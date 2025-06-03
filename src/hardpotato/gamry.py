@@ -21,10 +21,12 @@ class GamInfo:
             self.bipot = False
             self.resistance_opt = True
 
-            self.E_min = -10
-            self.E_max = 10
+            self.E_min = -12
+            self.E_max = 12
             self.sr_min = 0.000001
             self.sr_max = 10000
+            self.freq_min = 0.00001
+            self.freq_max = 2000000
     
         else:
             raise Exception(f"Gamry model {model} not available in hardpotato.")
@@ -181,6 +183,34 @@ class GamOCP(GamBase):
 
         self.body = f'tech=ocpt\nst={ttot}\neh=10\nel=-10\nsi={dt}\nqt={self.qt}'
 
+    # def __init__(self, ttot, dt, folder, fileName, header, path_lib, **kwargs):
+    #     self.fileName = fileName
+    #     self.folder = folder
+    #     self.text = ''
+
+    #     if 'qt' in kwargs:
+    #         qt = kwargs.get('qt')
+    #     else:
+    #         qt = 2
+    #     if 'resistance' in kwargs:
+    #         resistance = kwargs.get('resistance')
+    #     else:
+    #         resistance = 0 
+
+    #     self.head = 'C\x02\0\0\nfolder: ' + folder + '\nfileoverride\n' + \
+    #                 'header: ' + header + '\n\n'
+    #     self.body = 'tech=ocpt\nst=' + str(ttot) + '\neh=10' + \
+    #                 '\nel=-10' + '\nsi=' + str(dt) + '\nqt=' + str(qt) +\
+    #                 '\nrun\nsave:' + self.fileName + '\ntsave:' + self.fileName 
+    #     self.foot = '\nforcequit: yesiamsure\n'
+    #     self.text = self.head + self.body + self.foot
+
+    #     self.validate(ttot, dt)
+
+    # def validate(self, ttot, dt):
+    #     info = Info()
+    #     #info.limits(dt, info.dt_min, info.dt_max, 'dt', 's')
+    #     #info.limits(ttot, info.ttot_min, info.ttot_max, 'ttot', 's')
 
 class GamEIS(GamBase):
     """
@@ -193,4 +223,23 @@ class GamEIS(GamBase):
 
         print('EIS technique is still in development. Use with caution.')
         self.body = f'tech=imp\nei={Eini}\nfl={low_freq}\nfh={high_freq}\namp={amplitude}\nsens={sens}\nqt={self.qt}'
+    # def __init__(self, Eini, low_freq, high_freq, amplitude, sens, folder, 
+    #              fileName, header, path_lib, **kwargs):
+    #     print('EIS technique is still in development. Use with caution.')
+    #     self.fileName = fileName
+    #     self.folder = folder
+    #     self.text = ''
 
+    #     if 'qt' in kwargs:
+    #         qt = kwargs.get('qt')
+    #     else:
+    #         qt = 2 
+
+    #     self.head = 'C\x02\0\0\nfolder: ' + folder + '\nfileoverride\n' + \
+    #                 'header: ' + header + '\n\n'
+    #     self.body = 'tech=imp\nei=' + str(Eini) + '\nfl=' + str(low_freq) + \
+    #                 '\nfh=' + str(high_freq) + '\namp=' + str(amplitude) + \
+    #                 '\nsens=' + str(sens) + '\nqt=' + str(qt) + \
+    #                 '\nrun\nsave:' + self.fileName + '\ntsave:' + self.fileName 
+    #     self.foot = '\nforcequit: yesiamsure\n'
+    #     self.text = self.head + self.body + self.foot
