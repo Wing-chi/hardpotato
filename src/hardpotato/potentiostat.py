@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import softpotato as sp
 
 from hardpotato.chi import *
+from hardpotato.gamry import *
 import hardpotato.load_data as load_data
 import hardpotato.save_data as save_data
 import hardpotato.emstatpico as emstatpico
@@ -13,7 +14,7 @@ import hardpotato.pico_mscript as mscript
 import hardpotato.pico_serial as serial
 
 # Potentiostat models available: 
-models_available = ['chi1205b', 'chi1242b', 'chi601e', 'chi620e', 'chi604d', 'chi760e', 'emstatpico']
+models_available = ['chi1205b', 'chi1242b', 'chi601e', 'chi620e', 'chi604d', 'chi760e', 'emstatpico', 'gam1010e']
 
 # Global variables
 folder_save = '.'
@@ -39,6 +40,8 @@ class Info:
         self.model = model
         if "chi" in model_pstat:
             self.info = ChiInfo(model=model)
+        elif "gam" in model_pstat:
+            self.info = GamInfo(model=model)
         elif model_pstat == 'emstatpico':
             self.info = emstatpico.Info()
         else:
@@ -90,6 +93,10 @@ class Technique:
             file = open(folder_save + '/' + self.fileName + '.mcr', 'wb')
             file.write(self.text.encode('ascii'))
             file.close()
+        elif model_pstat == 'gam':
+            file = open(folder_save + '/' + self.fileName + '.mcr', 'wb')
+            file.write(self.text.encode('ascii'))
+            file.close()
         elif model_pstat == 'emstatpico':
             file = open(folder_save + '/' + self.fileName + '.mscr', 'wb')
             file.write(self.text.encode('ascii'))
@@ -97,6 +104,17 @@ class Technique:
 
     def run(self):
         if model_pstat[0:3] == 'chi':
+            self.message()
+            # Write macro:
+            self.writeToFile()
+            # Run command:
+            command = path_lib
+            param = ' /runmacro:\"' + folder_save + '/' + self.fileName + '.mcr\"'
+            print("Running Command: ", command + param)
+            os.system(command + param)
+            self.message(start=False)
+            self.plot()
+        elif model_pstat[0:3] == 'gam':
             self.message()
             # Write macro:
             self.writeToFile()
@@ -178,6 +196,10 @@ class CV(Technique):
             self.tech = ChiCV(Eini, Ev1, Ev2, Efin, sr, dE, nSweeps, sens, fileName=fileName, header=header,
                               folder=folder_save, model=model_pstat, **kwargs)
             Technique.__init__(self, text=self.tech.text, fileName=fileName)
+        elif "gam" in model_pstat:
+            self.tech = GamCV(Eini, Ev1, Ev2, Efin, sr, dE, nSweeps, sens, fileName=fileName, header=header,
+                              folder=folder_save, model=model_pstat, **kwargs)
+            Technique.__init__(self, text=self.tech.text, fileName=fileName)
         elif model_pstat == 'emstatpico':
             self.tech = emstatpico.CV(Eini=Eini, Ev1=Ev1, Ev2=Ev2, Efin=Efin, sr=sr, dE=dE, nSweeps=nSweeps, sens=sens,
                                       folder_save=folder_save, fileName=fileName, header=header, path_lib='',
@@ -199,6 +221,10 @@ class LSV(Technique):
             self.tech = ChiLSV(Eini, Efin, sr, dE, sens, fileName=fileName, model=model_pstat, folder=folder_save, **kwargs)
             Technique.__init__(self, text=self.tech.text, fileName=fileName)
             self.technique = 'LSV'
+        elif "gam" in model_pstat:
+            self.tech = GamLSV(Eini, Efin, sr, dE, sens, fileName=fileName, model=model_pstat, folder=folder_save, **kwargs)
+            Technique.__init__(self, text=self.tech.text, fileName=fileName)
+            self.technique = 'LSV'
         elif model_pstat == 'emstatpico':
             self.tech = emstatpico.LSV(Eini=Eini, Efin=Efin, sr=sr, dE=dE, sens=sens, folder_save=folder_save,
                                        fileName=fileName, header=header, **kwargs)
@@ -218,6 +244,10 @@ class IT(Technique):
         self.header = header
         if "chi" in model_pstat:
             self.tech = ChiIT(Estep, dt, ttot, sens, fileName=fileName, model=model_pstat, folder=folder_save, **kwargs)
+            Technique.__init__(self, text=self.tech.text, fileName=fileName)
+            self.technique = 'IT'
+        elif "gam" in model_pstat:
+            self.tech = GamIT(Estep, dt, ttot, sens, fileName=fileName, model=model_pstat, folder=folder_save, **kwargs)
             Technique.__init__(self, text=self.tech.text, fileName=fileName)
             self.technique = 'IT'
         elif model_pstat == 'emstatpico':
@@ -242,6 +272,11 @@ class CA(Technique):
                               header=header, fileName=fileName, model=model_pstat, folder=folder_save, **kwargs)
             Technique.__init__(self, text=self.tech.text, fileName=fileName)
             self.technique = 'CA'
+        elif "gam" in model_pstat:
+            self.tech = GamCA(Eini=Eini, Ev1=Ev1, Ev2=Ev2, dE=dE, nSweeps=nSweeps, pw=pw, sens=sens,
+                              header=header, fileName=fileName, model=model_pstat, folder=folder_save, **kwargs)
+            Technique.__init__(self, text=self.tech.text, fileName=fileName)
+            self.technique = 'CA'
         # elif model_pstat == 'emstatpico':
         #     self.tech = emstatpico.CA(Estep, dt, ttot, sens, folder_save, fileName,
         #                               header, **kwargs)
@@ -260,6 +295,11 @@ class OCP(Technique):
         self.header = header
         if "chi" in model_pstat:
             self.tech = ChiOCP(ttot, dt, header=header, fileName=fileName, folder=folder_save,
+                               model=model_pstat, **kwargs)
+            Technique.__init__(self, text=self.tech.text, fileName=fileName)
+            self.technique = 'OCP'
+        elif "gam" in model_pstat:
+            self.tech = GamOCP(ttot, dt, header=header, fileName=fileName, folder=folder_save,
                                model=model_pstat, **kwargs)
             Technique.__init__(self, text=self.tech.text, fileName=fileName)
             self.technique = 'OCP'
@@ -299,6 +339,11 @@ class EIS(Technique):
         self.header = header
         if "chi" in model_pstat:
             self.tech = ChiEIS(Eini=Eini, low_freq=low_freq, high_freq=high_freq, amplitude=amplitude, sens=sens,
+                               header=header, fileName=fileName, model=model_pstat, folder=folder_save, **kwargs)
+            Technique.__init__(self, text=self.tech.text, fileName=fileName)
+            self.technique = 'EIS'
+        elif "gam" in model_pstat:
+            self.tech = GamEIS(Eini=Eini, low_freq=low_freq, high_freq=high_freq, amplitude=amplitude, sens=sens,
                                header=header, fileName=fileName, model=model_pstat, folder=folder_save, **kwargs)
             Technique.__init__(self, text=self.tech.text, fileName=fileName)
             self.technique = 'EIS'
